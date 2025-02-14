@@ -8,7 +8,7 @@
  * VERSION: 2.0
  */
 
-const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require("baileys");
+const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require("@whiskeysockets/baileys");
 
 class Button {
     /**
