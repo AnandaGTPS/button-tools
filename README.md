@@ -1,7 +1,3 @@
-Below is an extended and comprehensive documentation for the Button class. This documentation covers every function—including those you mentioned (such as addCopy, addUrl, etc.)—and provides examples for each part. In addition, an example using a document URL ("https://cdn.notmebot.us.kg/file/062ad610a8.undefined") is included.
-
----
-
 # Button Class Documentation
 
 **Created By:** Nadz  
