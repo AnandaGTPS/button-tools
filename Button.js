@@ -1,10 +1,14 @@
 /**
-	* Created By wisx
+	* Created By Nadz`
 	* Contact me on whatsapp
 	* wa.me/6282139672290
 **/
 
-const { generateWAMessageFromContent, prepareWAMessageMedia, proto} = require("@whiskeysockets/baileys");
+/**
+	* VERSION: 2.0
+**/
+
+const { generateWAMessageFromContent, prepareWAMessageMedia, proto} = require("baileys");
 
 class Button {
     constructor() {
@@ -17,6 +21,8 @@ class Button {
         this._contextInfo = {};
         this._currentSelectionIndex = -1;
         this._currentSectionIndex = -1;
+        this._type = 0;
+        this._betonOld = [];
     }
 
     setVideo(path, options = {}) {
@@ -90,6 +96,11 @@ class Button {
     	this._beton.push({ name, buttonParamsJson: JSON.stringify(params) }) 
     return this;
     }
+    
+    setButtonV2(params) {
+    	this._betonOld.push(params) 
+    return this;
+    }
 
     makeRow(header = "", title = "", description = "", id = "") {
         if (this._currentSelectionIndex === -1 || this._currentSectionIndex === -1) {
@@ -122,6 +133,12 @@ class Button {
     addReply(display_text = "", id = "") {
         this._beton.push({ name: "quick_reply", buttonParamsJson: JSON.stringify({ display_text, id }) });
         return this;
+    }
+    
+    addReplyV2(displayText = "Nadz", buttonId = "Nadz") {
+    	this._betonOld.push({ buttonId, buttonText: { displayText }, type: 1 });
+	    this._type = 1;
+	return this;
     }
     
     addCall(display_text = "", id = "") {
@@ -201,10 +218,16 @@ class Button {
     }
 
     async run(jid, conn, quoted = '') {
+    if(this._type === 0) { 
         const message = {
             body: proto.Message.InteractiveMessage.Body.create({ text: this._body }),
             footer: proto.Message.InteractiveMessage.Footer.create({ text: this._footer }),
-            header: proto.Message.InteractiveMessage.Header.create({ title: this._title, subtitle: this._subtitle, hasMediaAttachment: (this._data ? true : false), ...(this._data ? await prepareWAMessageMedia(this._data, { upload: conn.waUploadToServer }) : {}) })
+            header: proto.Message.InteractiveMessage.Header.create({ 
+                title: this._title, 
+                subtitle: this._subtitle, 
+                hasMediaAttachment: !!this._data, 
+                ...(this._data ? await prepareWAMessageMedia(this._data, { upload: conn.waUploadToServer }) : {}) 
+            })
         };
 
         const msg = generateWAMessageFromContent(jid, {
@@ -223,7 +246,30 @@ class Button {
 
         await conn.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id });
         return msg;
-    }
+    } else {
+            return await conn.sendMessage(jid, {
+                ...(this._data ? this._data : {}),
+                [this._data ? "caption" : "text"]: this._body,
+                title: (!!this._data ? null : this._title),
+                footer: this._footer,
+                viewOnce: true, 
+                contextInfo: this._contextInfo, 
+                buttons: [...this._betonOld, ...this._beton.map(nadz => (function() {
+                	return {
+         	buttonId: "Nadz`", 
+         buttonText: {
+         	displayText: "Nadz`"
+         }, 
+         type: 1,
+         nativeFlowInfo: {
+         	name: nadz.name, 
+         paramsJson: nadz.buttonParamsJson
+	         }
+         }
+                })())]
+            }, { quoted });
+        }
+     }
 }
 
 module.exports = Button;
